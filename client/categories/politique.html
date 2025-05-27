@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique - Ma Presse</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/3d.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Ma Presse</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Accueil</a>
+                <a href="/categories/politique.html" class="nav-link active">Politique</a>
+                <a href="/categories/economie.html" class="nav-link">Économie</a>
+                <a href="/categories/international.html" class="nav-link">International</a>
+                <a href="/categories/sports.html" class="nav-link">Sports</a>
+                <a href="/categories/culture.html" class="nav-link">Culture</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- En-tête de la section -->
+    <header class="category-header politique">
+        <div class="container">
+            <h1 class="category-title">Politique</h1>
+            <p class="category-description">Toute l'actualité politique française et internationale, débats, élections, institutions…</p>
+            <div class="category-tags">
+                <span class="tag">Élections</span>
+                <span class="tag">Institutions</span>
+                <span class="tag">Réformes</span>
+                <span class="tag">Partis politiques</span>
+                <span class="tag">Débats</span>
+                <span class="tag">Europe</span>
+                <span class="tag">International</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filtres -->
+    <div class="filters-section">
+        <div class="container">
+            <div class="filters-wrapper">
+                <button class="filter-btn active" data-filter="all">Tous</button>
+                <button class="filter-btn" data-filter="elections">Élections</button>
+                <button class="filter-btn" data-filter="institutions">Institutions</button>
+                <button class="filter-btn" data-filter="france">France</button>
+                <button class="filter-btn" data-filter="international">International</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Articles -->
+    <main class="container">
+        <section class="articles-section">
+            <div class="articles-grid">
+                <!-- Les articles seront injectés ici via JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Ma Presse</h3>
+                    <p>Votre source d'information quotidienne</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Catégories</h4>
+                        <a href="/categories/politique.html">Politique</a>
+                        <a href="/categories/economie.html">Économie</a>
+                        <a href="/categories/international.html">International</a>
+                        <a href="/categories/sports.html">Sports</a>
+                        <a href="/categories/culture.html">Culture</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contact</h4>
+                        <a href="/contact.html">Nous contacter</a>
+                        <a href="/about.html">À propos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/parallax.js"></script>
+    <script src="/js/main.js"></script>
+
+    <div class="category-tags">
+        <span class="tag" onclick="loadArticles('politique', 'elections')">Élections</span>
+        <span class="tag">Institutions</span>
+        <span class="tag">Réformes</span>
+        <span class="tag">Partis politiques</span>
+        <span class="tag">Débats</span>
+        <span class="tag">Europe</span>
+        <span class="tag">International</span>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const path = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === path) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            const slug = path.split('/').pop().replace('.html', '');
+            if (typeof loadArticles === 'function') {
+                loadArticles(slug);
+            }
+        });
+    </script>
+</body>
+</html> 

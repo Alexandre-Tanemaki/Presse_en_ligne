@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International - Ma Presse</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/3d.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Ma Presse</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Accueil</a>
+                <a href="/categories/politique.html" class="nav-link">Politique</a>
+                <a href="/categories/economie.html" class="nav-link">Économie</a>
+                <a href="/categories/international.html" class="nav-link active">International</a>
+                <a href="/categories/sports.html" class="nav-link">Sports</a>
+                <a href="/categories/culture.html" class="nav-link">Culture</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- En-tête de la section -->
+    <header class="category-header international">
+        <div class="container">
+            <h1 class="category-title">International</h1>
+            <p class="category-description">L'actualité du monde, géopolitique, diplomatie, conflits, sociétés et cultures étrangères.</p>
+        </div>
+    </header>
+
+    <!-- Filtres -->
+    <div class="filters-section">
+        <div class="container">
+            <div class="filters-wrapper">
+                <button class="filter-btn active" data-filter="all">Tous</button>
+                <button class="filter-btn" data-filter="europe">Europe</button>
+                <button class="filter-btn" data-filter="afrique">Afrique</button>
+                <button class="filter-btn" data-filter="ameriques">Amériques</button>
+                <button class="filter-btn" data-filter="asie">Asie</button>
+                <button class="filter-btn" data-filter="moyen-orient">Moyen-Orient</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Articles -->
+    <main class="container">
+        <section class="articles-section">
+            <div class="articles-grid">
+                <!-- Les articles seront injectés ici via JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Ma Presse</h3>
+                    <p>Votre source d'information quotidienne</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Catégories</h4>
+                        <a href="/categories/politique.html">Politique</a>
+                        <a href="/categories/economie.html">Économie</a>
+                        <a href="/categories/international.html">International</a>
+                        <a href="/categories/sports.html">Sports</a>
+                        <a href="/categories/culture.html">Culture</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contact</h4>
+                        <a href="/contact.html">Nous contacter</a>
+                        <a href="/about.html">À propos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/parallax.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const path = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === path) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+        </script>
+</body>
+</html> 

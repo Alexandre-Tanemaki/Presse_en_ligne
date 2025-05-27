@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Ma Presse</title>
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/admin/css/admin.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Barre de navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/admin">
+                    <i class="fas fa-newspaper"></i> Ma Presse Admin
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{ active: currentView === 'dashboard' }" href="#" @click="currentView = 'dashboard'">
+                                <i class="fas fa-chart-line"></i> Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{ active: currentView === 'articles' }" href="#" @click="currentView = 'articles'">
+                                <i class="fas fa-file-alt"></i> Articles
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{ active: currentView === 'journalistes' }" href="#" @click="currentView = 'journalistes'">
+                                <i class="fas fa-users"></i> Journalistes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="{ active: currentView === 'calendar' }" href="#" @click="currentView = 'calendar'">
+                                <i class="fas fa-calendar-alt"></i> Calendrier éditorial
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Système de notifications -->
+        <div class="notifications-container">
+            <div v-for="notification in notifications" :key="notification.id" 
+                 class="notification" :class="[notification.type, { 'removing': notification.removing }]"
+                 @animationend="removeNotification(notification.id)">
+                <span>{{ notification.message }}</span>
+                <button class="notification-close" @click="closeNotification(notification.id)">&times;</button>
+            </div>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="container mt-4">
+            <!-- Tableau de bord -->
+            <div v-if="currentView === 'dashboard'">
+                <h2 class="mb-4"><i class="fas fa-chart-line"></i> Tableau de bord</h2>
+                
+                <!-- Statistiques -->
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>Articles publiés</h3>
+                        <div class="stat-value">{{ stats.articlesPublies }}</div>
+                        <div class="stat-trend" :class="stats.articlesTrend > 0 ? 'up' : 'down'">
+                            <i :class="stats.articlesTrend > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                            {{ Math.abs(stats.articlesTrend) }}% ce mois
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Articles en attente</h3>
+                        <div class="stat-value">{{ stats.articlesEnAttente }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Journalistes actifs</h3>
+                        <div class="stat-value">{{ stats.journalistesActifs }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Vues totales</h3>
+                        <div class="stat-value">{{ stats.vuesTotales }}</div>
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            {{ stats.vuesTrend }}% ce mois
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Articles par catégorie</h5>
+                                <canvas id="categoriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Publications par mois</h5>
+                                <canvas id="publicationsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestion des articles avec filtres avancés -->
+            <div v-if="currentView === 'articles'">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-file-alt"></i> Gestion des articles</h2>
+                    <button class="btn btn-primary" @click="showArticleModal()">
+                        <i class="fas fa-plus"></i> Nouvel article
+                    </button>
+                </div>
+
+                <!-- Filtres avancés -->
+                <div class="filters-section mb-4">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label>Catégorie</label>
+                            <select v-model="filters.categorie" class="form-select">
+                                <option value="">Toutes</option>
+                                <option v-for="categorie in categories" :key="categorie.id_categorie" :value="categorie.id_categorie">
+                                    {{ categorie.nom_categorie }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Statut</label>
+                            <select v-model="filters.statut" class="form-select">
+                                <option value="">Tous</option>
+                                <option value="brouillon">Brouillon</option>
+                                <option value="publie">Publié</option>
+                                <option value="archive">Archivé</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Journaliste</label>
+                            <select v-model="filters.journaliste_id" class="form-select">
+                                <option value="">Tous</option>
+                                <option v-for="j in journalistes" :key="j.id" :value="j.id">
+                                    {{ j.prenom }} {{ j.nom }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Recherche</label>
+                            <input type="text" v-model="filters.search" class="form-control" 
+                                   placeholder="Rechercher un article...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des articles -->
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Catégorie</th>
+                                <th>Journaliste</th>
+                                <th>Statut</th>
+                                <th>Date de publication</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="article in articles" :key="article.id_article">
+                                <td>{{ article.titre }}</td>
+                                <td>
+                                    <span class="badge" :class="getCategorieClass(article.categorie)">
+                                        {{ article.categorie }}
+                                    </span>
+                                </td>
+                                <td>{{ article.journaliste_nom }} {{ article.journaliste_prenom }}</td>
+                                <td>
+                                    <span class="badge" :class="getStatutClass(article.statut)">
+                                        {{ article.statut }}
+                                    </span>
+                                </td>
+                                <td>{{ formatDate(article.date_publication) }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary" @click="showArticleModal(article)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" v-if="article.statut === 'brouillon'" @click="publierArticle(article.id)">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" v-if="article.statut === 'publie'" @click="archiverArticle(article.id_article)">
+                                            <i class="fas fa-archive"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="supprimerArticle(article.id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Gestion des journalistes -->
+            <div v-if="currentView === 'journalistes'">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-users"></i> Gestion des journalistes</h2>
+                    <button class="btn btn-primary" @click="showJournalisteModal()">
+                        <i class="fas fa-plus"></i> Nouveau journaliste
+                    </button>
+                </div>
+
+                <!-- Liste des journalistes -->
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Articles</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="journaliste in journalistes" :key="journaliste.id_journaliste">
+                                <td>
+                                    <img :src="journaliste.photo_url || '/admin/img/default-avatar.png'" 
+                                         class="rounded-circle" 
+                                         width="40" 
+                                         height="40" 
+                                         :alt="journaliste.nom">
+                                </td>
+                                <td>{{ journaliste.nom }}</td>
+                                <td>{{ journaliste.prenom }}</td>
+                                <td>{{ journaliste.email }}</td>
+                                <td>{{ journaliste.articles_count || 0 }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary" @click="showJournalisteModal(journaliste)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" @click="voirArticles(journaliste.id_journaliste)">
+                                            <i class="fas fa-newspaper"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="supprimerJournaliste(journaliste.id_journaliste)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Calendrier éditorial -->
+            <div v-if="currentView === 'calendar'">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calendar-alt"></i> Calendrier éditorial</h2>
+                    <div>
+                        <button class="btn btn-outline-secondary me-2" @click="previousMonth">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="h5 mb-0">{{ currentMonthName }} {{ currentYear }}</span>
+                        <button class="btn btn-outline-secondary ms-2" @click="nextMonth">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="editorial-calendar">
+                    <div class="calendar-grid">
+                        <div v-for="day in calendarDays" :key="day.date" 
+                             class="calendar-day" :class="{ 'has-articles': day.articles.length > 0 }">
+                            <span>{{ new Date(day.date).getDate() }}</span>
+                            <span v-if="day.articles.length" class="article-count">
+                                {{ day.articles.length }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Article -->
+        <div class="modal fade" id="articleModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ editingArticle.id ? 'Modifier l\'article' : 'Nouvel article' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="saveArticle">
+                            <div class="mb-3">
+                                <label class="form-label">Titre</label>
+                                <input type="text" class="form-control" v-model="editingArticle.titre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Catégorie</label>
+                                <select class="form-select" v-model="editingArticle.id_categorie" required>
+                                    <option v-for="categorie in categories" :key="categorie.id_categorie" :value="categorie.id_categorie">
+                                        {{ categorie.nom_categorie }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Journaliste</label>
+                                <select class="form-select" v-model="editingArticle.id_journaliste" required>
+                                    <option v-for="j in journalistes" :key="j.id_journaliste" :value="j.id_journaliste">
+                                        {{ j.prenom }} {{ j.nom }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Type de contenu</label>
+                                <select class="form-select" v-model="editingArticle.type_contenu" required>
+                                    <option value="texte">Texte</option>
+                                    <option value="video">Vidéo</option>
+                                    <option value="image">Image</option>
+                                    <option value="mixte">Mixte</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" v-model="editingArticle.statut" required>
+                                    <option value="brouillon">Brouillon</option>
+                                    <option value="publie">Publié</option>
+                                    <option value="archive">Archivé</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contenu</label>
+                                <textarea class="form-control" v-model="editingArticle.contenu" rows="10" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Image principale</label>
+                                <input type="file" class="form-control" @change="handleImageUpload" accept="image/*">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tags</label>
+                                <input type="text" class="form-control" v-model="editingArticle.tagsInput" 
+                                       placeholder="Séparez les tags par des virgules">
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" v-model="editingArticle.featured" :true-value="1" :false-value="0" id="featuredCheck">
+                                <label class="form-check-label" for="featuredCheck">Article à la une</label>
+                            </div>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Journaliste -->
+        <div class="modal fade" id="journalisteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ editingJournaliste.id ? 'Modifier le journaliste' : 'Nouveau journaliste' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit.prevent="saveJournaliste">
+                            <div class="mb-3">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" v-model="editingJournaliste.nom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-control" v-model="editingJournaliste.prenom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" v-model="editingJournaliste.email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Biographie</label>
+                                <textarea class="form-control" v-model="editingJournaliste.biographie" rows="4"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Photo</label>
+                                <input type="file" class="form-control" @change="handlePhotoUpload" accept="image/*">
+                            </div>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.0/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/admin/js/admin.js"></script>
+</body>
+</html> 

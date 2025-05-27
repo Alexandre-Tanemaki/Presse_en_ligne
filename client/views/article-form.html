@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvel article</title>
+    <link rel="stylesheet" href="/css/article.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Nouvel article</h1>
+        
+        <form id="formArticle" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="titre">Titre *</label>
+                <input type="text" id="titre" name="titre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_categorie">Catégorie *</label>
+                <select id="id_categorie" name="id_categorie" required>
+                    <option value="">Sélectionnez une catégorie</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_journaliste">Journaliste *</label>
+                <select id="id_journaliste" name="id_journaliste" required>
+                    <option value="">Sélectionnez un journaliste</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="contenu">Contenu *</label>
+                <textarea id="contenu" name="contenu" rows="10" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="type_contenu">Type de contenu</label>
+                <select id="type_contenu" name="type_contenu">
+                    <option value="texte">Texte</option>
+                    <option value="video">Vidéo</option>
+                    <option value="image">Image</option>
+                    <option value="mixte">Mixte</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Image principale</label>
+                <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="featured" value="true">
+                    Article à la une
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.history.back()">Annuler</button>
+                <button type="submit">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="/js/article-form.js"></script>
+</body>
+</html> 

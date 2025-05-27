@@ -1,0 +1,315 @@
+/* Styles généraux */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Styles de la barre de navigation */
+.navbar-brand i {
+    margin-right: 0.5rem;
+}
+
+/* Styles des badges */
+.badge {
+    padding: 0.5em 0.8em;
+    font-size: 0.85em;
+}
+
+/* Badges des catégories */
+.badge-politique {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-economie {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-international {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-sports {
+    background-color: #ffc107;
+    color: black;
+}
+
+.badge-culture {
+    background-color: #6f42c1;
+    color: white;
+}
+
+/* Badges des statuts */
+.badge-brouillon {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-publie {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-archive {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Styles des tableaux */
+.table {
+    background-color: white;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.25rem;
+}
+
+.table th {
+    border-top: none;
+    background-color: #f8f9fa;
+}
+
+/* Styles des boutons d'action */
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.1rem;
+}
+
+/* Styles des modales */
+.modal-content {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+/* Styles des formulaires */
+.form-control:focus,
+.form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Styles des images de profil */
+.rounded-circle {
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+}
+
+/* Styles des messages d'alerte */
+.alert {
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 0.25rem;
+}
+
+/* Styles pour les écrans mobiles */
+@media (max-width: 768px) {
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        margin: 0.1rem 0;
+    }
+
+    .table-responsive {
+        border: none;
+    }
+}
+
+/* Système de notifications */
+.notifications-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    padding: 15px 20px;
+    border-radius: 4px;
+    color: white;
+    width: 300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.notification.removing {
+    animation: slideOut 0.3s ease-in-out forwards;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #dc3545;
+}
+
+.notification.info {
+    background-color: #17a2b8;
+}
+
+.notification.warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 20px;
+    opacity: 0.7;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Styles pour le tableau de bord */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #343a40;
+}
+
+.stat-card .stat-trend {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.stat-trend.up {
+    color: #28a745;
+}
+
+.stat-trend.down {
+    color: #dc3545;
+}
+
+/* Styles pour le calendrier éditorial */
+.editorial-calendar {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+    position: relative;
+}
+
+.calendar-day.has-articles {
+    background-color: #e9ecef;
+}
+
+.calendar-day .article-count {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+/* Styles pour les filtres avancés */
+.filters-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.filter-group {
+    margin-bottom: 0;
+}
+
+.filter-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+} 
