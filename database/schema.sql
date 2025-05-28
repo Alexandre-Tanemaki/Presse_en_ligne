@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS articles (
     featured TINYINT(1) DEFAULT 0,
     image_principale VARCHAR(255),
     statut ENUM('brouillon', 'publie', 'archive') DEFAULT 'brouillon',
+    date_archivage DATETIME NULL,
+    raison_archivage TEXT NULL,
     FOREIGN KEY (id_journaliste) REFERENCES journalistes(id_journaliste) ON DELETE SET NULL,
     FOREIGN KEY (id_categorie) REFERENCES categories(id_categorie) ON DELETE SET NULL
 );
@@ -75,4 +77,5 @@ INSERT INTO categories (nom_categorie, slug) VALUES
 CREATE INDEX idx_articles_categorie ON articles(id_categorie);
 CREATE INDEX idx_articles_date_publication ON articles(date_publication);
 CREATE INDEX idx_articles_statut ON articles(statut);
-CREATE INDEX idx_articles_featured ON articles(featured); 
+CREATE INDEX idx_articles_featured ON articles(featured);
+CREATE INDEX idx_articles_date_archivage ON articles(date_archivage); 

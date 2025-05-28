@@ -6,6 +6,7 @@ const path = require('path');
 const db = require('./db');
 const apiRoutes = require('./routes/api');
 const articlesRoutes = require('./routes/articles');
+const archiveRoutes = require('./routes/archiveRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ app.use('/api/articles', articlesRoutes);
 app.use('/api/journalistes', journalistesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/archives', archiveRoutes);
 
 // Servir les fichiers statiques du dossier client
 app.use(express.static(path.join(__dirname, '../client')));

@@ -112,4 +112,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
         form.addEventListener('submit', handleSubmit);
     }
+});
+
+function isLoggedIn() {
+    return !!localStorage.getItem('userToken');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (!isLoggedIn()) {
+        document.getElementById('article-content').innerHTML = `
+            <div class="alert alert-info">
+                <p>Vous devez être connecté pour lire l'intégralité de cet article.</p>
+                <a href="/login.html" class="btn btn-primary">Se connecter</a>
+                <a href="/register.html" class="btn btn-secondary">S'inscrire</a>
+            </div>
+        `;
+    } else {
+        // Ici, tu charges et affiches le contenu complet de l'article
+        // Exemple : fetch('/api/articles/ID') puis affichage dans #article-content
+    }
 }); 

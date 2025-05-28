@@ -305,7 +305,8 @@ const app = createApp({
 
         async archiverArticle(id) {
             try {
-                await axios.post(`/articles/${id}/archiver`);
+                const raison = prompt("Pourquoi archiver cet article ? (optionnel)");
+                await axios.post(`/api/archives/${id}`, { raison });
                 this.loadArticles();
                 this.showSuccess('Article archivé avec succès');
             } catch (error) {

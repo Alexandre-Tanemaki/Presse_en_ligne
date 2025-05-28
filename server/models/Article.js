@@ -2,11 +2,12 @@ const db = require('../db');
 const slugify = require('slugify');
 
 class Article {
-    static async create({ titre, contenu, id_journaliste, id_categorie, type_contenu = 'texte', featured = false, image_principale = null }) {
+    static async create({ titre, contenu, id_journaliste, id_categorie, type_contenu = 'texte', featured = false, image_principale = null, statut = 'brouillon' }) {
         try {
             // Conversion des valeurs
             const featuredValue = featured ? 1 : 0;
             const typeContenuValue = ['texte', 'video', 'image', 'mixte'].includes(type_contenu) ? type_contenu : 'texte';
+            const statutValue = ['brouillon', 'publie', 'archive'].includes(statut) ? statut : 'brouillon';
 
             const [result] = await db.query(
                 `INSERT INTO articles (
@@ -19,8 +20,8 @@ class Article {
                     image_principale,
                     date_publication,
                     statut
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 'brouillon')`,
-                [titre, contenu, id_journaliste || null, id_categorie || null, typeContenuValue, featuredValue, image_principale]
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`,
+                [titre, contenu, id_journaliste || null, id_categorie || null, typeContenuValue, featuredValue, image_principale, statutValue]
             );
             
             return result.insertId;
@@ -173,15 +174,50 @@ class Article {
         }
     }
 
-    static async archiver(id) {
+    static async archiver(id, raison = null) {
         try {
             const [result] = await db.query(
-                'UPDATE articles SET statut = "archive" WHERE id_article = ?',
-                [id]
+                'UPDATE articles SET statut = "archive", date_archivage = CURRENT_TIMESTAMP, raison_archivage = ? WHERE id_article = ?',
+                [raison, id]
             );
             return result.affectedRows > 0;
         } catch (error) {
             console.error('Erreur lors de l\'archivage de l\'article:', error);
+            throw error;
+        }
+    }
+
+    static async getArchives({ page = 1, limit = 10 } = {}) {
+        try {
+            const offset = (page - 1) * limit;
+            const [rows] = await db.query(`
+                SELECT a.*, 
+                    j.nom as journaliste_nom, 
+                    j.prenom as journaliste_prenom,
+                    c.nom_categorie as categorie_nom
+                FROM articles a 
+                LEFT JOIN journalistes j ON a.id_journaliste = j.id_journaliste 
+                LEFT JOIN categories c ON a.id_categorie = c.id_categorie 
+                WHERE a.statut = 'archive'
+                ORDER BY a.date_archivage DESC
+                LIMIT ? OFFSET ?
+            `, [limit, offset]);
+            return rows;
+        } catch (error) {
+            console.error('Erreur lors de la récupération des articles archivés:', error);
+            throw error;
+        }
+    }
+
+    static async restaurer(id) {
+        try {
+            const [result] = await db.query(
+                'UPDATE articles SET statut = "publie", date_archivage = NULL, raison_archivage = NULL WHERE id_article = ?',
+                [id]
+            );
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error('Erreur lors de la restauration de l\'article:', error);
             throw error;
         }
     }
