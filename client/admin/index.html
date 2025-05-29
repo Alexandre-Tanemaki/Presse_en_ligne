@@ -34,6 +34,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" :class="{ active: currentView === 'archives' }" href="#" @click="currentView = 'archives'">
+                                <i class="fas fa-archive"></i> Archives
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" :class="{ active: currentView === 'journalistes' }" href="#" @click="currentView = 'journalistes'">
                                 <i class="fas fa-users"></i> Journalistes
                             </a>
@@ -200,6 +205,80 @@
                                             <i class="fas fa-archive"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-danger" @click="supprimerArticle(article.id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Gestion des archives -->
+            <div v-if="currentView === 'archives'">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-archive"></i> Articles archivés</h2>
+                </div>
+
+                <!-- Filtres pour les archives -->
+                <div class="filters-section mb-4">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label>Catégorie</label>
+                            <select v-model="filters.categorie" class="form-select">
+                                <option value="">Toutes</option>
+                                <option v-for="categorie in categories" :key="categorie.id_categorie" :value="categorie.id_categorie">
+                                    {{ categorie.nom_categorie }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Journaliste</label>
+                            <select v-model="filters.journaliste_id" class="form-select">
+                                <option value="">Tous</option>
+                                <option v-for="j in journalistes" :key="j.id_journaliste" :value="j.id_journaliste">
+                                    {{ j.prenom }} {{ j.nom }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Recherche</label>
+                            <input type="text" v-model="filters.search" class="form-control" 
+                                   placeholder="Rechercher dans les archives...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des articles archivés -->
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Catégorie</th>
+                                <th>Journaliste</th>
+                                <th>Date d'archivage</th>
+                                <th>Raison</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="article in filteredArchives" :key="article.id_article">
+                                <td>{{ article.titre }}</td>
+                                <td>{{ article.categorie_nom }}</td>
+                                <td>{{ article.journaliste_prenom }} {{ article.journaliste_nom }}</td>
+                                <td>{{ formatDate(article.date_archivage) }}</td>
+                                <td>{{ article.raison_archivage || 'Non spécifiée' }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary" @click="showArticleModal(article)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" @click="restaurerArticle(article.id_article)">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="supprimerArticle(article.id_article)">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>

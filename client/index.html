@@ -11,6 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="/css/3d.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/recherche.css" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
@@ -19,11 +21,11 @@
             <a class="navbar-brand" href="/">Ma Presse</a>
             <div class="nav-links">
                 <a href="/" class="nav-link active">Accueil</a>
-                <a href="/politique" class="nav-link">Politique</a>
-                <a href="/economie" class="nav-link">Économie</a>
-                <a href="/international" class="nav-link">International</a>
-                <a href="/sports" class="nav-link">Sports</a>
-                <a href="/culture" class="nav-link">Culture</a>
+                <a href="/categories/politique.html" class="nav-link" id="nav-politique">Politique</a>
+                <a href="/categories/economie.html" class="nav-link">Économie</a>
+                <a href="/categories/international.html" class="nav-link">International</a>
+                <a href="/categories/sports.html" class="nav-link">Sports</a>
+                <a href="/categories/culture.html" class="nav-link">Culture</a>
             </div>
         </div>
     </nav>
@@ -33,6 +35,17 @@
         <div class="container">
             <h1 class="hero-title">L'actualité en perspective</h1>
             <p class="hero-subtitle">Découvrez l'information sous un nouvel angle, avec une approche moderne et approfondie</p>
+            
+            <!-- Barre de recherche -->
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Rechercher un article...">
+                    <button id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="search-suggestions" id="search-suggestions"></div>
+            </div>
         </div>
     </section>
 
@@ -77,44 +90,172 @@
             }
         });
 
+        // Variables globales pour la recherche
+        let allArticles = [];
+        let searchTimeout;
+        let currentSearchResults = [];
+
         // Fonction pour charger les articles
         async function loadArticles() {
             try {
                 const response = await axios.get('/api/articles');
-                // Si l'API renvoie { success: true, data: [...] }
-                const articles = response.data.data
+                allArticles = response.data.data
                     ? response.data.data.filter(article => article.statut === 'publie')
-                    : []; // ou adapte selon ta structure de retour
+                    : [];
 
-                const container = document.getElementById('articles-container');
-                const template = document.getElementById('article-template');
-
-                articles.forEach(article => {
-                    console.log(article);
-                    const clone = template.content.cloneNode(true);
-
-                    clone.querySelector('.article-image').src =
-                        article.image || article.image_principale || '/images/default.jpg';
-                    clone.querySelector('.article-image').alt = article.titre || article.title;
-                    clone.querySelector('.article-category').textContent = article.categorie || article.category;
-                    clone.querySelector('.article-title').textContent = article.titre || article.title;
-                    clone.querySelector('.article-excerpt').textContent = article.contenu
-                        ? article.contenu.substring(0, 150) + '...'
-                        : (article.excerpt || '');
-                    clone.querySelector('.article-date').textContent = new Date(article.date_publication || article.date).toLocaleDateString('fr-FR');
-                    clone.querySelector('.article-author').textContent = (article.journaliste_prenom && article.journaliste_nom)
-                        ? `${article.journaliste_prenom} ${article.journaliste_nom}`
-                        : (article.author || '');
-
-                    container.appendChild(clone);
-                });
+                displayArticles(allArticles);
             } catch (error) {
                 console.error('Erreur lors du chargement des articles:', error);
             }
         }
 
+        // Fonction pour afficher les articles
+        function displayArticles(articles) {
+            const articlesContainer = document.getElementById('articles-container');
+            articlesContainer.innerHTML = '';
+
+            articles.forEach(article => {
+                const articleElement = document.createElement('div');
+                articleElement.className = 'article-card';
+                articleElement.style.cursor = 'pointer';
+                
+                // Ajout de l'événement de clic avec vérification d'authentification
+                articleElement.addEventListener('click', async () => {
+                    try {
+                        // Vérifier si l'utilisateur est connecté
+                        const response = await fetch('/api/auth/check', {
+                            credentials: 'include'
+                        });
+                        const data = await response.json();
+
+                        if (data.authenticated) {
+                            // Si l'utilisateur est connecté, rediriger vers la page de catégorie
+                            const categorySlug = article.categorie_slug || article.categorie.toLowerCase();
+                            window.location.href = `/categories/${categorySlug}.html`;
+                        } else {
+                            // Si l'utilisateur n'est pas connecté, afficher la modale de connexion
+                            const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                            loginModal.show();
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la vérification de l\'authentification:', error);
+                    }
+                });
+
+                clone.querySelector('.article-image').src =
+                    article.image || article.image_principale || '/images/default.jpg';
+                clone.querySelector('.article-image').alt = article.titre || article.title;
+                clone.querySelector('.article-category').textContent = article.categorie || article.category;
+                clone.querySelector('.article-title').textContent = article.titre || article.title;
+                clone.querySelector('.article-excerpt').textContent = article.contenu
+                    ? article.contenu.substring(0, 150) + '...'
+                    : (article.excerpt || '');
+                clone.querySelector('.article-date').textContent = new Date(article.date_publication || article.date).toLocaleDateString('fr-FR');
+                clone.querySelector('.article-author').textContent = (article.journaliste_prenom && article.journaliste_nom)
+                    ? `${article.journaliste_prenom} ${article.journaliste_nom}`
+                    : (article.author || '');
+
+                articlesContainer.appendChild(articleElement);
+            });
+        }
+
+        // Fonction pour afficher les suggestions
+        function displaySuggestions(articles) {
+            const suggestionsContainer = document.getElementById('search-suggestions');
+            suggestionsContainer.innerHTML = '';
+
+            if (articles.length === 0) {
+                suggestionsContainer.innerHTML = `
+                    <div class="suggestion-item">
+                        <div class="suggestion-title">Aucun résultat trouvé</div>
+                    </div>
+                `;
+                suggestionsContainer.classList.add('active');
+                return;
+            }
+
+            articles.slice(0, 5).forEach(article => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.className = 'suggestion-item';
+                suggestionItem.innerHTML = `
+                    <div class="suggestion-title">${article.titre || article.title}</div>
+                    <div class="suggestion-category">${article.categorie || article.category}</div>
+                    <div class="suggestion-excerpt">${article.contenu ? article.contenu.substring(0, 100) + '...' : ''}</div>
+                `;
+
+                suggestionItem.addEventListener('click', () => {
+                    const categorySlug = article.categorie_slug || article.categorie.toLowerCase();
+                    window.location.href = `/categories/${categorySlug}.html`;
+                });
+
+                suggestionsContainer.appendChild(suggestionItem);
+            });
+
+            suggestionsContainer.classList.add('active');
+        }
+
+        // Fonction de recherche
+        function searchArticles(query) {
+            if (!query.trim()) {
+                displayArticles(allArticles);
+                document.getElementById('search-suggestions').classList.remove('active');
+                return;
+            }
+
+            const searchTerms = query.toLowerCase().split(' ');
+            const filteredArticles = allArticles.filter(article => {
+                const searchableText = `
+                    ${article.titre || ''} 
+                    ${article.contenu || ''} 
+                    ${article.categorie || ''} 
+                    ${article.journaliste_prenom || ''} 
+                    ${article.journaliste_nom || ''}
+                `.toLowerCase();
+
+                return searchTerms.every(term => searchableText.includes(term));
+            });
+
+            currentSearchResults = filteredArticles;
+            displayArticles(filteredArticles);
+            displaySuggestions(filteredArticles);
+        }
+
+        // Gestionnaire d'événements pour la recherche
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchArticles(e.target.value);
+            }, 300);
+        });
+
+        document.getElementById('search-button').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value;
+            searchArticles(query);
+        });
+
+        // Fermer les suggestions en cliquant en dehors
+        document.addEventListener('click', (e) => {
+            const searchContainer = document.querySelector('.search-container');
+            const suggestions = document.getElementById('search-suggestions');
+            
+            if (!searchContainer.contains(e.target)) {
+                suggestions.classList.remove('active');
+            }
+        });
+
+        // Gérer la touche Entrée
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value;
+                searchArticles(query);
+            }
+        });
+
         // Charger les articles au chargement de la page
         document.addEventListener('DOMContentLoaded', loadArticles);
+
+        const currentCategory = 'politique';
+        document.getElementById('nav-' + currentCategory).classList.add('active');
     </script>
 
     <!-- Footer -->
@@ -172,5 +313,24 @@
             </div>
         </div>
     </footer>
+
+    <!-- Ajout de la modale de connexion -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Connexion requise</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Pour accéder à cet article, vous devez être connecté.</p>
+                    <div class="d-grid gap-2">
+                        <a href="/login.html" class="btn btn-primary">Se connecter</a>
+                        <a href="/register.html" class="btn btn-outline-primary">S'inscrire</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

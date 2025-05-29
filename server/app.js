@@ -7,6 +7,7 @@ const db = require('./db');
 const apiRoutes = require('./routes/api');
 const articlesRoutes = require('./routes/articles');
 const archiveRoutes = require('./routes/archiveRoutes');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -54,61 +55,13 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'API fonctionne correctement' });
 });
 
-// Route catch-all pour le SPA (optionnel, à adapter)
+// Route catch-all pour servir les fichiers HTML de catégorie ou index.html
 app.get('*', (req, res) => {
-    // Si c'est une page HTML, on la sert
-    if (req.path.endsWith('.html')) {
-        return res.sendFile(path.join(__dirname, '../client', req.path));
+    const filePath = path.join(__dirname, '../client', req.path);
+    if (req.path.endsWith('.html') && fs.existsSync(filePath)) {
+        return res.sendFile(filePath);
     }
-    // Sinon, on sert l'accueil
     res.sendFile(path.join(__dirname, '../client/index.html'));
-});
-
-// Routes pour les pages de catégories
-app.get('/categories/politique.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories/politique.html/'));
-});
-
-app.get('/categories/economie.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories/economie.html'));
-});
-
-app.get('/categories/international.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories/international.html'));
-});
-
-app.get('/categories/sports.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories/sports.html'));
-});
-
-app.get('/categories/culture.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories/culture.html'));
-});
-
-// Redirection des anciennes URLs vers les nouvelles
-app.get('/politique.html', (req, res) => {
-    res.redirect('/categories/politique.html');
-});
-
-app.get('/economie.html', (req, res) => {
-    res.redirect('/categories/economie.html');
-});
-
-app.get('/international.html', (req, res) => {
-    res.redirect('/categories/international.html');
-});
-
-app.get('/sports.html', (req, res) => {
-    res.redirect('/categories/sports.html');
-});
-
-app.get('/culture.html', (req, res) => {
-    res.redirect('/categories/culture.html');
-});
-
-// Route pour les pages de catégories (ancienne version)
-app.get('/categories/:category', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/categories', req.params.category + '.html'));
 });
 
 // Route de test base de données

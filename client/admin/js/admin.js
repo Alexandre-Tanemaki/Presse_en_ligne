@@ -11,6 +11,7 @@ const app = createApp({
         return {
             currentView: 'dashboard',
             articles: [],
+            archives: [],
             journalistes: [],
             categories: [],
             notifications: [],
@@ -66,6 +67,20 @@ const app = createApp({
             });
         },
 
+        filteredArchives() {
+            return this.archives.filter(article => {
+                if (this.filters.categorie && article.id_categorie !== this.filters.categorie) return false;
+                if (this.filters.journaliste_id && article.id_journaliste !== this.filters.journaliste_id) return false;
+                if (this.filters.search) {
+                    const searchTerm = this.filters.search.toLowerCase();
+                    return article.titre.toLowerCase().includes(searchTerm) ||
+                           article.contenu.toLowerCase().includes(searchTerm) ||
+                           (article.raison_archivage && article.raison_archivage.toLowerCase().includes(searchTerm));
+                }
+                return true;
+            });
+        },
+
         currentMonthName() {
             return new Date(this.currentYear, this.currentMonth).toLocaleString('fr-FR', { month: 'long' });
         }
@@ -77,6 +92,8 @@ const app = createApp({
                 this.$nextTick(() => {
                     this.initCharts();
                 });
+            } else if (newView === 'archives') {
+                this.loadArchives();
             }
         }
     },
@@ -133,9 +150,17 @@ const app = createApp({
         // Méthodes pour le tableau de bord
         async loadStats() {
             try {
-                const response = await axios.get('/stats');
-                this.stats = response.data;
+                const response = await axios.get('/api/stats');
+                if (response.data && response.data.success) {
+                    this.stats = response.data.data;
+                    this.$nextTick(() => {
+                        this.initCharts();
+                    });
+                } else {
+                    throw new Error('Format de données invalide');
+                }
             } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
                 this.showError('Erreur lors du chargement des statistiques');
             }
         },
@@ -153,21 +178,41 @@ const app = createApp({
             categoriesChart = new Chart(ctxCategories, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Politique', 'Économie', 'International', 'Sports', 'Culture'],
+                    labels: this.stats.categoriesData.map(cat => cat.label),
                     datasets: [{
-                        data: [12, 19, 8, 15, 10],
+                        data: this.stats.categoriesData.map(cat => cat.value),
                         backgroundColor: [
                             '#dc3545',
                             '#28a745',
                             '#007bff',
                             '#ffc107',
-                            '#6f42c1'
+                            '#6f42c1',
+                            '#20c997',
+                            '#fd7e14',
+                            '#6610f2'
                         ]
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 10,
+                            bottom: 10,
+                            left: 10
+                        }
+                    }
                 }
             });
 
@@ -176,20 +221,62 @@ const app = createApp({
             if (publicationsChart) {
                 publicationsChart.destroy();
             }
+
+            // Formater les mois pour l'affichage
+            const moisLabels = this.stats.publicationsData.map(item => {
+                const [annee, mois] = item.mois.split('-');
+                return new Date(annee, mois - 1).toLocaleString('fr-FR', { month: 'short' });
+            });
+
             publicationsChart = new Chart(ctxPublications, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                    labels: moisLabels,
                     datasets: [{
                         label: 'Articles publiés',
-                        data: [65, 59, 80, 81, 56, 55],
+                        data: this.stats.publicationsData.map(item => item.count),
                         borderColor: '#007bff',
-                        tension: 0.1
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                padding: 10
+                            },
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                padding: 10
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            right: 10,
+                            bottom: 10,
+                            left: 10
+                        }
+                    }
                 }
             });
         },
@@ -330,8 +417,34 @@ const app = createApp({
         async loadJournalistes() {
             try {
                 const response = await axios.get('/api/journalistes');
-                this.journalistes = response.data;
+                console.log('Réponse complète:', response);
+                console.log('Structure de la réponse:', {
+                    success: response.data.success,
+                    dataType: typeof response.data.data,
+                    isArray: Array.isArray(response.data.data),
+                    dataLength: response.data.data?.length,
+                    firstItem: response.data.data?.[0]
+                });
+                
+                if (response.data && response.data.success && Array.isArray(response.data.data)) {
+                    this.journalistes = response.data.data.map(j => {
+                        console.log('Journaliste brut:', j);
+                        return {
+                            id_journaliste: j.id_journaliste,
+                            nom: j.nom,
+                            prenom: j.prenom,
+                            email: j.email,
+                            biographie: j.biographie,
+                            photo_url: j.photo_url
+                        };
+                    });
+                    console.log('Journalistes transformés:', this.journalistes);
+                } else {
+                    console.error('Format de données invalide:', response.data);
+                    this.showError('Format de données invalide pour les journalistes');
+                }
             } catch (error) {
+                console.error('Erreur détaillée:', error.response?.data || error);
                 this.showError('Erreur lors du chargement des journalistes');
             }
         },
@@ -359,7 +472,13 @@ const app = createApp({
                 this.showSuccess('Journaliste enregistré avec succès');
             } catch (error) {
                 console.error('Erreur détaillée:', error.response?.data || error);
-                this.showError('Erreur lors de l\'enregistrement du journaliste');
+                
+                // Gestion spécifique des erreurs
+                if (error.response?.data?.error?.includes('Duplicate entry') && error.response?.data?.error?.includes('email')) {
+                    this.showError('Cette adresse email est déjà utilisée par un autre journaliste');
+                } else {
+                    this.showError('Erreur lors de l\'enregistrement du journaliste');
+                }
             }
         },
 
@@ -472,6 +591,35 @@ const app = createApp({
             } catch (error) {
                 console.error('Erreur lors du chargement des catégories:', error);
                 this.showError('Erreur lors du chargement des catégories');
+            }
+        },
+
+        async loadArchives() {
+            try {
+                const response = await axios.get('/api/archives');
+                if (response.data && Array.isArray(response.data)) {
+                    this.archives = response.data;
+                } else {
+                    throw new Error('Format de données invalide');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des archives:', error);
+                this.showError('Erreur lors du chargement des archives');
+            }
+        },
+
+        async restaurerArticle(id) {
+            if (!id) {
+                this.showError('ID de l\'article manquant');
+                return;
+            }
+            try {
+                await axios.post(`/api/archives/${id}/restaurer`);
+                this.loadArchives();
+                this.loadArticles();
+                this.showSuccess('Article restauré avec succès');
+            } catch (error) {
+                this.showError('Erreur lors de la restauration de l\'article');
             }
         }
     }

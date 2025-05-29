@@ -217,6 +217,10 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .stat-card h3 {
@@ -312,4 +316,30 @@ body {
     font-weight: 500;
     margin-bottom: 5px;
     display: block;
+}
+
+/* Styles pour les graphiques du tableau de bord */
+.card {
+    height: 100%;
+    margin-bottom: 1rem;
+}
+
+.card-body {
+    position: relative;
+    height: 300px;
+    padding: 1rem;
+}
+
+.card-body canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Ajustement de la grille des graphiques */
+.row {
+    margin: 0 -15px;
+}
+
+.col-md-6 {
+    padding: 0 15px;
 } 

@@ -91,6 +91,20 @@ class Journaliste {
         }
     }
 
+    static async getAllWithArticleCount() {
+        const [rows] = await db.query(`
+            SELECT 
+                j.*, 
+                COUNT(a.id_article) AS article_count
+            FROM journalistes j
+            LEFT JOIN articles a 
+                ON a.id_journaliste = j.id_journaliste AND a.statut = 'publie'
+            GROUP BY j.id_journaliste
+            ORDER BY j.nom, j.prenom
+        `);
+        return rows;
+    }
+
     static async getArticles(journalisteId) {
         try {
             const [rows] = await db.query(
@@ -105,4 +119,4 @@ class Journaliste {
     }
 }
 
-module.exports = Journaliste; 
+module.exports = Journaliste;

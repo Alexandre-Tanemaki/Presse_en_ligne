@@ -107,8 +107,8 @@ function updatePagination(total, currentPage) {
 
     // Ajouter les événements de clic
     pagination.querySelectorAll('.page-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
+        link.addEventListener('click', function() {
+    
             const newPage = parseInt(this.getAttribute('data-page'));
             if (newPage !== currentPage && newPage > 0 && newPage <= totalPages) {
                 currentPage = newPage;

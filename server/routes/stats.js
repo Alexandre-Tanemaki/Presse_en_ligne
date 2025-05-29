@@ -5,62 +5,70 @@ const db = require('../db');
 // Route pour obtenir les statistiques globales
 router.get('/', async (req, res) => {
     try {
-        // Récupérer le nombre total d'articles
-        const [articlesCount] = await db.query(
-            'SELECT COUNT(*) as total FROM articles'
-        );
+        // Statistiques des articles
+        const [articlesStats] = await db.query(`
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN statut = 'publie' THEN 1 ELSE 0 END) as articlesPublies,
+                SUM(CASE WHEN statut = 'brouillon' THEN 1 ELSE 0 END) as articlesEnAttente,
+                COUNT(DISTINCT id_journaliste) as journalistesActifs
+            FROM articles
+        `);
 
-        // Récupérer le nombre d'articles par catégorie
+        // Statistiques des vues (à implémenter plus tard)
+        const vuesTotales = 0;
+        const vuesTrend = 0;
+
+        // Articles par catégorie pour le graphique
         const [articlesByCategory] = await db.query(`
-            SELECT c.nom_categorie, COUNT(a.id_article) as count
+            SELECT 
+                c.nom_categorie as label,
+                COUNT(a.id_article) as value
             FROM categories c
             LEFT JOIN articles a ON c.id_categorie = a.id_categorie
             GROUP BY c.id_categorie, c.nom_categorie
-            ORDER BY count DESC
+            ORDER BY value DESC
         `);
 
-        // Récupérer le nombre d'articles par journaliste
-        const [articlesByJournalist] = await db.query(`
+        // Publications par mois pour le graphique
+        const [articlesByMonth] = await db.query(`
             SELECT 
-                j.nom,
-                j.prenom,
-                COUNT(a.id_article) as count
-            FROM journalistes j
-            LEFT JOIN articles a ON j.id_journaliste = a.id_journaliste
-            GROUP BY j.id_journaliste, j.nom, j.prenom
-            ORDER BY count DESC
+                DATE_FORMAT(date_publication, '%Y-%m') as mois,
+                COUNT(*) as count
+            FROM articles
+            WHERE date_publication >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            GROUP BY DATE_FORMAT(date_publication, '%Y-%m')
+            ORDER BY mois ASC
         `);
 
-        // Récupérer les articles les plus récents
-        const [recentArticles] = await db.query(`
-            SELECT 
-                a.titre,
-                a.date_publication,
-                c.nom_categorie,
-                CONCAT(j.prenom, ' ', j.nom) as auteur
-            FROM articles a
-            LEFT JOIN categories c ON a.id_categorie = c.id_categorie
-            LEFT JOIN journalistes j ON a.id_journaliste = j.id_journaliste
-            ORDER BY a.date_publication DESC
-            LIMIT 5
+        // Calculer la tendance des articles
+        const [lastMonthArticles] = await db.query(`
+            SELECT COUNT(*) as count
+            FROM articles
+            WHERE date_publication >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
         `);
 
-        // Récupérer le nombre total de journalistes et de catégories
-        const [counts] = await db.query(`
-            SELECT
-                (SELECT COUNT(*) FROM journalistes) as journalistes_count,
-                (SELECT COUNT(*) FROM categories) as categories_count
+        const [previousMonthArticles] = await db.query(`
+            SELECT COUNT(*) as count
+            FROM articles
+            WHERE date_publication >= DATE_SUB(NOW(), INTERVAL 2 MONTH)
+            AND date_publication < DATE_SUB(NOW(), INTERVAL 1 MONTH)
         `);
+
+        const articlesTrend = previousMonthArticles[0].count === 0 ? 0 :
+            ((lastMonthArticles[0].count - previousMonthArticles[0].count) / previousMonthArticles[0].count) * 100;
 
         res.json({
             success: true,
             data: {
-                total_articles: articlesCount[0].total,
-                articles_by_category: articlesByCategory,
-                articles_by_journalist: articlesByJournalist,
-                recent_articles: recentArticles,
-                total_journalistes: counts[0].journalistes_count,
-                total_categories: counts[0].categories_count
+                articlesPublies: articlesStats[0].articlesPublies || 0,
+                articlesEnAttente: articlesStats[0].articlesEnAttente || 0,
+                journalistesActifs: articlesStats[0].journalistesActifs || 0,
+                vuesTotales: vuesTotales,
+                articlesTrend: Math.round(articlesTrend),
+                vuesTrend: vuesTrend,
+                categoriesData: articlesByCategory,
+                publicationsData: articlesByMonth
             }
         });
 

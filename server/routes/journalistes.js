@@ -35,8 +35,8 @@ const upload = multer({
 // Récupérer tous les journalistes
 router.get('/', async (req, res) => {
     try {
-        const journalistes = await Journaliste.getAll();
-        res.json(journalistes);
+        const journalistes = await Journaliste.getAllWithArticleCount();
+        res.json({ success: true, data: journalistes });
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la récupération des journalistes', error: error.message });
     }
