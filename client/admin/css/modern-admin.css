@@ -242,6 +242,26 @@ body {
     margin: 0.25rem 0;
 }
 
+.stat-trend {
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.stat-trend.positive {
+    color: var(--success);
+}
+
+.stat-trend.negative {
+    color: var(--danger);
+}
+
+.stat-trend i {
+    font-size: 0.7rem;
+}
+
 /* Responsive Design */
 @media (max-width: 992px) {
     .sidebar {

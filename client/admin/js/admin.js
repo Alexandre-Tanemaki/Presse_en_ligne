@@ -10,17 +10,19 @@ const app = createApp({
     data() {
         return {
             currentView: 'dashboard',
-            showSidebar: true,
+            showSidebar: false,
+            notifications: [],
             articles: [],
-            archives: [],
             journalistes: [],
             categories: [],
-            notifications: [],
+            archives: [],
             stats: {
-                articlesCount: 0,
-                journalistesCount: 0,
-                viewsCount: 0,
-                commentsCount: 0,
+                articlesPublies: 0,
+                articlesEnAttente: 0,
+                journalistesActifs: 0,
+                vuesTotales: 0,
+                articlesTrend: 0,
+                vuesTrend: 0,
                 categoriesData: [],
                 publicationsData: []
             },
@@ -30,6 +32,7 @@ const app = createApp({
                 search: ''
             },
             editingArticle: {
+                id_article: null,
                 titre: '',
                 contenu: '',
                 id_categorie: '',
@@ -39,6 +42,7 @@ const app = createApp({
                 image: null
             },
             editingJournaliste: {
+                id_journaliste: null,
                 nom: '',
                 prenom: '',
                 email: '',
@@ -85,16 +89,29 @@ const app = createApp({
     },
 
     watch: {
-        currentView(newView, oldView) {
-            if (oldView === 'dashboard') {
-                this.cleanupCharts();
-            }
-            if (newView === 'dashboard') {
-                this.$nextTick(() => {
-                    this.loadStats();
-                });
-            } else if (newView === 'archives') {
-                this.loadArchives();
+        currentView: {
+            immediate: true,
+            handler(newView, oldView) {
+                // Nettoyer les graphiques si on quitte le dashboard
+                if (oldView === 'dashboard') {
+                    this.cleanupCharts();
+                }
+                
+                // Charger les données appropriées pour la nouvelle vue
+                switch(newView) {
+                    case 'dashboard':
+                        this.loadStats();
+                        break;
+                    case 'archives':
+                        this.loadArchives();
+                        break;
+                    case 'articles':
+                        this.loadArticles();
+                        break;
+                    case 'journalistes':
+                        this.loadJournalistes();
+                        break;
+                }
             }
         }
     },
@@ -104,18 +121,10 @@ const app = createApp({
         articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
         journalisteModal = new bootstrap.Modal(document.getElementById('journalisteModal'));
 
-        // Chargement initial des données
-        this.loadArticles();
-        this.loadJournalistes();
+        // Chargement initial des données communes
         this.loadCategories();
-        this.loadStats();
-        this.updateCalendar();
-
-        if (this.currentView === 'dashboard') {
-            this.$nextTick(() => {
-                this.initCharts();
-            });
-        }
+        
+        // Le chargement des autres données sera géré par le watcher de currentView
     },
 
     methods: {
@@ -167,17 +176,31 @@ const app = createApp({
         async loadStats() {
             try {
                 const response = await axios.get('/api/stats');
-                if (response.data && response.data.success) {
-                    this.stats = response.data.data;
+                if (!response.data || !response.data.success) {
+                    throw new Error(response.data?.message || 'Format de données invalide');
+                }
+
+                // Mettre à jour les stats avec des valeurs par défaut si manquantes
+                this.stats = {
+                    articlesPublies: response.data.data.articlesPublies || 0,
+                    articlesEnAttente: response.data.data.articlesEnAttente || 0,
+                    journalistesActifs: response.data.data.journalistesActifs || 0,
+                    vuesTotales: response.data.data.vuesTotales || 0,
+                    articlesTrend: response.data.data.articlesTrend || 0,
+                    vuesTrend: response.data.data.vuesTrend || 0,
+                    categoriesData: response.data.data.categoriesData || [],
+                    publicationsData: response.data.data.publicationsData || []
+                };
+
+                // Initialiser les graphiques seulement si nous sommes sur le dashboard
+                if (this.currentView === 'dashboard') {
                     this.$nextTick(() => {
                         this.initCharts();
                     });
-                } else {
-                    throw new Error('Format de données invalide');
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement des statistiques:', error);
-                this.showError('Erreur lors du chargement des statistiques');
+                this.showError(error.message || 'Erreur lors du chargement des statistiques');
             }
         },
 
@@ -415,7 +438,6 @@ const app = createApp({
                 const response = await axios.get('/api/articles');
                 if (response.data && response.data.success) {
                     this.articles = response.data.data;
-                    this.updateStats();
                 }
             } catch (error) {
                 this.showError('Erreur lors du chargement des articles');
@@ -556,7 +578,6 @@ const app = createApp({
                     if (this.currentView === 'archives') {
                         await this.loadArchives();
                     }
-                    this.updateStats();
                 }
             } catch (error) {
                 console.error('Erreur lors de la suppression:', error);
@@ -673,6 +694,7 @@ const app = createApp({
         // Méthodes utilitaires
         showArticleModal(article = null) {
             this.editingArticle = article ? { ...article } : {
+                id_article: null,
                 titre: '',
                 contenu: '',
                 id_categorie: '',
@@ -789,35 +811,6 @@ const app = createApp({
                 this.showError('Erreur lors de la restauration de l\'article');
                 console.error('Erreur:', error);
             }
-        },
-
-        updateStats() {
-            // Mettre à jour les statistiques
-            this.stats.articlesCount = this.articles.filter(a => a.statut === 'publie').length;
-            this.stats.journalistesCount = this.journalistes.length;
-            
-            // Préparer les données pour les graphiques
-            const categoriesCount = {};
-            const publicationsCount = {};
-            
-            this.articles.forEach(article => {
-                // Compter par catégorie
-                if (article.categorie) {
-                    categoriesCount[article.categorie] = (categoriesCount[article.categorie] || 0) + 1;
-                }
-                
-                // Compter par mois de publication
-                if (article.date_publication) {
-                    const date = new Date(article.date_publication);
-                    const monthYear = date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-                    publicationsCount[monthYear] = (publicationsCount[monthYear] || 0) + 1;
-                }
-            });
-            
-            this.stats.categoriesData = Object.entries(categoriesCount).map(([label, value]) => ({ label, value }));
-            this.stats.publicationsData = Object.entries(publicationsCount).map(([label, value]) => ({ label, value }));
-            
-            this.updateCharts();
         },
 
         updateCharts() {

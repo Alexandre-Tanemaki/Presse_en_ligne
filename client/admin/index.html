@@ -79,7 +79,11 @@
                         </div>
                         <div class="stat-info">
                             <h3>Articles publiés</h3>
-                            <div class="stat-value">{{ stats.articlesCount || 0 }}</div>
+                            <div class="stat-value">{{ stats.articlesPublies }}</div>
+                            <div class="stat-trend" :class="{ 'positive': stats.articlesTrend > 0, 'negative': stats.articlesTrend < 0 }">
+                                <i :class="stats.articlesTrend > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                                {{ Math.abs(stats.articlesTrend) }}%
+                            </div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -88,7 +92,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Journalistes actifs</h3>
-                            <div class="stat-value">{{ stats.journalistesCount || 0 }}</div>
+                            <div class="stat-value">{{ stats.journalistesActifs }}</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -97,16 +101,20 @@
                         </div>
                         <div class="stat-info">
                             <h3>Vues totales</h3>
-                            <div class="stat-value">{{ stats.viewsCount || 0 }}</div>
+                            <div class="stat-value">{{ stats.vuesTotales }}</div>
+                            <div class="stat-trend" :class="{ 'positive': stats.vuesTrend > 0, 'negative': stats.vuesTrend < 0 }">
+                                <i :class="stats.vuesTrend > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                                {{ Math.abs(stats.vuesTrend) }}%
+                            </div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background-color: var(--info)">
-                            <i class="fas fa-comments"></i>
+                            <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Commentaires</h3>
-                            <div class="stat-value">{{ stats.commentsCount || 0 }}</div>
+                            <h3>En attente</h3>
+                            <div class="stat-value">{{ stats.articlesEnAttente }}</div>
                         </div>
                     </div>
                 </div>
