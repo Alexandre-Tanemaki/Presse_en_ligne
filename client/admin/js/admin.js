@@ -48,7 +48,11 @@ const app = createApp({
             currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
             calendarDays: [],
-            selectedDay: null
+            selectedDay: null,
+            charts: {
+                categories: null,
+                publications: null
+            }
         };
     },
 
@@ -81,10 +85,13 @@ const app = createApp({
     },
 
     watch: {
-        currentView(newView) {
+        currentView(newView, oldView) {
+            if (oldView === 'dashboard') {
+                this.cleanupCharts();
+            }
             if (newView === 'dashboard') {
                 this.$nextTick(() => {
-                    this.initCharts();
+                    this.loadStats();
                 });
             } else if (newView === 'archives') {
                 this.loadArchives();
@@ -191,17 +198,17 @@ const app = createApp({
             }
 
             // Détruire les graphiques existants s'ils existent
-            if (window.categoriesChart instanceof Chart) {
-                window.categoriesChart.destroy();
+            if (this.charts.categories) {
+                this.charts.categories.destroy();
             }
-            if (window.publicationsChart instanceof Chart) {
-                window.publicationsChart.destroy();
+            if (this.charts.publications) {
+                this.charts.publications.destroy();
             }
 
             // Graphique des catégories
             if (this.stats.categoriesData.length > 0) {
                 const ctxCategories = categoriesElement.getContext('2d');
-                window.categoriesChart = new Chart(ctxCategories, {
+                this.charts.categories = new Chart(ctxCategories, {
                     type: 'doughnut',
                     data: {
                         labels: this.stats.categoriesData.map(cat => cat.label),
@@ -254,7 +261,7 @@ const app = createApp({
                     return new Date(annee, mois - 1).toLocaleString('fr-FR', { month: 'short' });
                 });
 
-                window.publicationsChart = new Chart(ctxPublications, {
+                this.charts.publications = new Chart(ctxPublications, {
                     type: 'line',
                     data: {
                         labels: moisLabels,
@@ -874,6 +881,18 @@ const app = createApp({
                         }
                     }
                 });
+            }
+        },
+
+        // Méthode pour nettoyer les graphiques lors du changement de vue
+        cleanupCharts() {
+            if (this.charts.categories) {
+                this.charts.categories.destroy();
+                this.charts.categories = null;
+            }
+            if (this.charts.publications) {
+                this.charts.publications.destroy();
+                this.charts.publications = null;
             }
         }
     }
