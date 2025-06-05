@@ -111,6 +111,18 @@ const app = createApp({
                     case 'journalistes':
                         this.loadJournalistes();
                         break;
+                    case 'calendar':
+                        this.loadArticles().then(() => {
+                            this.updateCalendar();
+                        });
+                        break;
+                }
+            }
+        },
+        articles: {
+            handler() {
+                if (this.currentView === 'calendar') {
+                    this.updateCalendar();
                 }
             }
         }
@@ -406,11 +418,15 @@ const app = createApp({
         },
 
         getArticlesForDate(date) {
+            const startOfDay = new Date(date);
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date(date);
+            endOfDay.setHours(23, 59, 59, 999);
+            
             return this.articles.filter(article => {
                 const articleDate = new Date(article.date_publication);
-                return articleDate.getDate() === date.getDate() &&
-                       articleDate.getMonth() === date.getMonth() &&
-                       articleDate.getFullYear() === date.getFullYear();
+                return articleDate >= startOfDay && articleDate <= endOfDay;
             });
         },
 
@@ -427,8 +443,28 @@ const app = createApp({
         showDayDetails(day) {
             if (day.articles.length > 0) {
                 this.selectedDay = day;
-                // Si vous voulez montrer les articles dans une modale ou un panneau latéral
-                // Vous pouvez ajouter cette fonctionnalité ici
+                const modalContent = `
+                    <div class="modal-header">
+                        <h5 class="modal-title">Articles du ${new Date(day.date).toLocaleDateString('fr-FR')}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="list-group">
+                            ${day.articles.map(article => `
+                                <div class="list-group-item">
+                                    <h6>${article.titre}</h6>
+                                    <p class="mb-1">${article.contenu.substring(0, 100)}...</p>
+                                    <small class="text-muted">
+                                        Par ${article.journaliste_prenom} ${article.journaliste_nom}
+                                    </small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                const modal = document.getElementById('articleModal');
+                modal.querySelector('.modal-content').innerHTML = modalContent;
+                new bootstrap.Modal(modal).show();
             }
         },
 
