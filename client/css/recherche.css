@@ -1,0 +1,201 @@
+/* Variables pour la barre de recherche */
+:root {
+    --search-primary: #3b82f6;
+    --search-primary-dark: #2563eb;
+    --search-bg: rgba(255, 255, 255, 0.95);
+    --search-shadow: rgba(0, 0, 0, 0.1);
+    --search-text: #1e293b;
+    --search-placeholder: #94a3b8;
+    --search-border: rgba(255, 255, 255, 0.2);
+    --search-hover: rgba(248, 250, 252, 0.8);
+}
+
+/* Conteneur principal de la recherche */
+.search-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    position: relative;
+    z-index: 100;
+}
+
+/* Boîte de recherche */
+.search-box {
+    display: flex;
+    background: var(--search-bg);
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 20px var(--search-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--search-border);
+}
+
+.search-box:focus-within {
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+    border-color: var(--search-primary);
+}
+
+/* Champ de saisie */
+#search-input {
+    flex: 1;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    background: transparent;
+    color: var(--search-text);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+#search-input::placeholder {
+    color: var(--search-placeholder);
+    font-weight: 400;
+}
+
+#search-input:focus {
+    outline: none;
+}
+
+/* Bouton de recherche */
+#search-button {
+    background: linear-gradient(135deg, var(--search-primary), var(--search-primary-dark));
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#search-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+#search-button i {
+    font-size: 1.1rem;
+}
+
+/* Suggestions de recherche */
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--search-bg);
+    border-radius: 15px;
+    box-shadow: 0 8px 30px var(--search-shadow);
+    display: none;
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--search-border);
+}
+
+.search-suggestions.active {
+    display: block;
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Éléments de suggestion */
+.suggestion-item {
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: var(--search-hover);
+}
+
+.suggestion-title {
+    font-weight: 600;
+    color: var(--search-text);
+    font-size: 1.1rem;
+}
+
+.suggestion-category {
+    font-size: 0.85rem;
+    color: var(--search-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.suggestion-excerpt {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-top: 0.3rem;
+}
+
+/* Animation pour les suggestions */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style de la barre de défilement */
+.search-suggestions::-webkit-scrollbar {
+    width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+/* Media queries pour la responsivité */
+@media (max-width: 768px) {
+    .search-container {
+        max-width: 90%;
+        margin: 1rem auto;
+    }
+
+    .search-box {
+        padding: 0.3rem;
+    }
+
+    #search-input {
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+    }
+
+    #search-button {
+        padding: 0.8rem 1.5rem;
+    }
+
+    .suggestion-item {
+        padding: 1rem;
+    }
+
+    .suggestion-title {
+        font-size: 1rem;
+    }
+} 

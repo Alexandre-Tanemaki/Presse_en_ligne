@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports - Ma Presse</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/3d.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Ma Presse</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Accueil</a>
+                <a href="/categories/politique.html" class="nav-link">Politique</a>
+                <a href="/categories/economie.html" class="nav-link">Économie</a>
+                <a href="/categories/international.html" class="nav-link">International</a>
+                <a href="/categories/sports.html" class="nav-link active">Sports</a>
+                <a href="/categories/culture.html" class="nav-link">Culture</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- En-tête de la section -->
+    <header class="category-header categorie-sports">
+        <div class="container">
+            <h1 class="category-title">Sports</h1>
+            <div class="category-tags">
+                <span class="tag">Football</span>
+                <span class="tag">Rugby</span>
+                <span class="tag">Tennis</span>
+                <span class="tag">Basket</span>
+                <span class="tag">Jeux Olympiques</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filtres -->
+    <div class="filters-section">
+        <div class="container">
+            <div class="filters-wrapper">
+                <button class="filter-btn active" data-filter="all">Tous</button>
+                <button class="filter-btn" data-filter="football">Football</button>
+                <button class="filter-btn" data-filter="tennis">Tennis</button>
+                <button class="filter-btn" data-filter="basket">Basket</button>
+                <button class="filter-btn" data-filter="athletisme">Athlétisme</button>
+                <button class="filter-btn" data-filter="autres">Autres sports</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Effet background images flottantes -->
+    <div id="floating-images-bg"></div>
+
+    <!-- Section Articles (Design 3D comme l'accueil) -->
+    <section class="container">
+        <h2 class="a-la-une">Sports : Tous les sujets</h2>
+        <div class="articles-grid" id="articles-container"></div>
+    </section>
+
+    <!-- Template pour les articles (identique à l'accueil) -->
+    <template id="article-template">
+        <article class="article-card">
+            <div class="article-image-container">
+                <img src="" alt="" class="article-image">
+            </div>
+            <div class="article-content">
+                <span class="article-category"></span>
+                <h3 class="article-title"></h3>
+                <p class="article-excerpt"></p>
+                <div class="article-meta">
+                    <span class="article-date"></span>
+                    <span class="article-author"></span>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <h3>Ma Presse</h3>
+                        <p>L'actualité en perspective, une vision moderne de l'information.</p>
+                        <div class="social-links">
+                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Rubriques</h4>
+                        <ul>
+                            <li><a href="/categories/politique.html">Politique</a></li>
+                            <li><a href="/categories/economie.html">Économie</a></li>
+                            <li><a href="/categories/international.html">International</a></li>
+                            <li><a href="/categories/sports.html">Sports</a></li>
+                            <li><a href="/categories/culture.html">Culture</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Services</h4>
+                        <ul>
+                            <li><a href="/abonnement">Abonnement</a></li>
+                            <li><a href="/newsletter">Newsletter</a></li>
+                            <li><a href="/archives">Archives</a></li>
+                            <li><a href="/application">Application mobile</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>À propos</h4>
+                        <ul>
+                            <li><a href="/qui-sommes-nous">Qui sommes-nous</a></li>
+                            <li><a href="/contact">Contact</a></li>
+                            <li><a href="/mentions-legales">Mentions légales</a></li>
+                            <li><a href="/confidentialite">Politique de confidentialité</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2024 Ma Presse. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/parallax.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/floating-images.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const path = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === path) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (window.location.pathname.includes(link.getAttribute('href'))) {
+            link.classList.add('active');
+          }
+        });
+
+        const categorySlug = 'Sports';
+        async function loadArticles() {
+            try {
+                const response = await axios.get('/api/articles');
+                const articles = response.data.data
+                    ? response.data.data.filter(article =>
+                        article.statut === 'publie' &&
+                        (article.categorie === categorySlug || article.categorie_slug === 'sports')
+                    )
+                    : [];
+
+                const container = document.getElementById('articles-container');
+                const template = document.getElementById('article-template');
+                container.innerHTML = '';
+
+                articles.forEach(article => {
+                    const clone = template.content.cloneNode(true);
+                    clone.querySelector('.article-image').src =
+                        article.image || article.image_principale || '/images/default.jpg';
+                    clone.querySelector('.article-image').alt = article.titre || article.title;
+                    clone.querySelector('.article-category').textContent = article.categorie || article.category;
+                    clone.querySelector('.article-title').textContent = article.titre || article.title;
+                    clone.querySelector('.article-excerpt').textContent = article.contenu
+                        ? article.contenu.substring(0, 150) + '...'
+                        : (article.excerpt || '');
+                    clone.querySelector('.article-date').textContent = new Date(article.date_publication || article.date).toLocaleDateString('fr-FR');
+                    clone.querySelector('.article-author').textContent = (article.journaliste_prenom && article.journaliste_nom)
+                        ? `${article.journaliste_prenom} ${article.journaliste_nom}`
+                        : (article.author || '');
+                    container.appendChild(clone);
+                });
+            } catch (error) {
+                console.error('Erreur lors du chargement des articles:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadArticles);
+    </script>
+</body>
+</html>
